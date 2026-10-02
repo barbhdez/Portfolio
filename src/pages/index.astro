@@ -1,0 +1,269 @@
+---
+// ─────────────────────────────────────────────────────────────
+//  PORTFOLIO · página principal
+//  · Fotos del anillo/índice ........ src/assets/galeria
+//  · Parejas antes/después .......... src/assets/antes-despues  (foto-antes.jpg + foto-despues.jpg)
+//  · Textos, nombre, firma, redes ... src/data/config.json
+// ─────────────────────────────────────────────────────────────
+import { getImage } from 'astro:assets';
+import '../styles/global.css';
+import config from '../data/config.json';
+import info from '../data/fotos.json';
+import viajesData from '../data/viajes.json';
+import { generarFirma } from '../lib/firma';
+
+const EXT = '{jpg,jpeg,png,webp,avif,JPG,JPEG,PNG,WEBP}';
+const ordenar = (a: string, b: string) => a.localeCompare(b, 'es', { numeric: true });
+const nombreDe = (ruta: string) => ruta.split('/').pop()!;
+
+// Convierte "nueva-york_noche.jpg" en "Nueva york noche".
+// Los nombres de cámara (IMG_1234) se quedan sin título: solo se ve el número.
+const tituloDesdeArchivo = (nombre: string) => {
+  const base = nombre.replace(/\.[^.]+$/, '');
+  if (/^(IMG|DSC|DSCF|PXL|P\d)[-_ ]?\d/i.test(base)) return '';
+  return base.replace(/[-_]+/g, ' ').replace(/^\w/, (c) => c.toUpperCase());
+};
+
+// ───────── Galería ─────────
+const archivos = import.meta.glob<{ default: ImageMetadata }>('../assets/galeria/*.{jpg,jpeg,png,webp,avif,JPG,JPEG,PNG,WEBP}', { eager: true });
+const fotos = await Promise.all(
+  Object.keys(archivos).sort(ordenar).map(async (ruta, i) => {
+    const src = archivos[ruta].default;
+    const nombre = nombreDe(ruta);
+    const extra = (info as Record<string, any>)[nombre] ?? {};
+    const mini = await getImage({ src, width: Math.min(420, src.width), format: 'webp', quality: 72 });
+    const grande = await getImage({ src, width: Math.min(2000, src.width), format: 'webp', quality: 82 });
+    return {
+      n: String(i + 1).padStart(3, '0'),
+      titulo: extra.titulo || tituloDesdeArchivo(nombre),
+      lugar: extra.lugar || 'Other',
+      sonido: extra.sonido || 'bosque',
+      viaje: 0,
+      meta: [extra.lugar, extra.categoria, extra['año']].filter(Boolean).join(' · '),
+      mini: mini.src,
+      grande: grande.src,
+      ratio: src.width / src.height,
+    };
+  })
+);
+const total = String(fotos.length).padStart(3, '0');
+const viajes = viajesData.viajes;
+const viajeDe = (lugar: string) => {
+  const k = viajes.findIndex((v) => v.lugares.includes(lugar));
+  return k < 0 ? viajes.length - 1 : k;
+};
+
+// ───────── Antes / Después ─────────
+const archivosAD = import.meta.glob<{ default: ImageMetadata }>('../assets/antes-despues/*.{jpg,jpeg,png,webp,avif,JPG,JPEG,PNG,WEBP}', { eager: true });
+const grupos: Record<string, { antes?: ImageMetadata; despues?: ImageMetadata }> = {};
+for (const ruta of Object.keys(archivosAD)) {
+  const m = nombreDe(ruta).match(/^(.*?)[-_ ](antes|despues|después)\.[^.]+$/i);
+  if (!m) continue;
+  const clave = m[1];
+  grupos[clave] ??= {};
+  grupos[clave][m[2].toLowerCase() === 'antes' ? 'antes' : 'despues'] = archivosAD[ruta].default;
+}
+const parejas = await Promise.all(
+  Object.keys(grupos).sort(ordenar)
+    .filter((k) => grupos[k].antes && grupos[k].despues)
+    .map(async (k, i) => {
+      const { antes, despues } = grupos[k] as { antes: ImageMetadata; despues: ImageMetadata };
+      const w = Math.min(1800, despues.width);
+      return {
+        n: String(i + 1).padStart(2, '0'),
+        titulo: tituloDesdeArchivo(k + '.jpg'),
+        antes: (await getImage({ src: antes, width: w, format: 'webp', quality: 82 })).src,
+        despues: (await getImage({ src: despues, width: w, format: 'webp', quality: 82 })).src,
+        ratio: despues.width / despues.height,
+      };
+    })
+);
+
+// ───────── Firma ─────────
+const firma = generarFirma(config.firma || config.nombre);
+---
+
+<html lang="en" data-tema="oscuro" data-luz="0">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{config.nombre} — Portfolio</title>
+    <meta name="description" content={`${config.nombre} · ${config.rol}. ${config.titular}`} />
+    <meta property="og:title" content={`${config.nombre} — Portfolio`} />
+    <meta property="og:description" content={config.bio} />
+    {fotos[0] && <meta property="og:image" content={fotos[0].grande} />}
+    <meta name="theme-color" content="#0c0c0b" />
+    <!-- Recuerda el modo claro/oscuro elegido antes de pintar nada (evita parpadeo) -->
+    <script is:inline>
+      try { const n = Number(localStorage.getItem('luz') || 0); if (n >= 0 && n <= 3) { const h = document.documentElement; h.dataset.luz = String(n); h.dataset.tema = n >= 2 ? 'claro' : 'oscuro'; } } catch (e) {}
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body data-vista="anillo">
+    <!-- Grano de película (solo se ve en modo cine) -->
+    <div class="grano" aria-hidden="true"></div>
+
+    <!-- Pantalla de entrada: la firma se dibuja sola -->
+    <div id="entrada" aria-hidden="true">
+      <svg class:list={["firma", "firma-grande", { "firma-real": firma.real }]} viewBox={firma.viewBox}>
+        {firma.trazos.map((t) => <path d={t.d} transform={t.transform} pathLength="1" />)}
+      </svg>
+    </div>
+
+    <!-- Esquinas -->
+    <header class="esquina sup-izq">
+      <a href="/" class="marca" aria-label={config.nombre}>
+        <svg class:list={["firma", "firma-mini", { "firma-real": firma.real }]} viewBox={firma.viewBox} aria-hidden="true">
+          {firma.trazos.map((t) => <path d={t.d} transform={t.transform} pathLength="1" />)}
+        </svg>
+      </a>
+      <span class="tenue">{config.rol}</span>
+    </header>
+
+    <nav class="esquina sup-der">
+      <button class="nav-btn activo" data-ir="anillo">Ring</button>
+      <button class="nav-btn" data-ir="indice">Index</button>
+      {parejas.length > 0 && <button class="nav-btn" data-ir="edicion">Before/After</button>}
+      <button class="nav-btn" data-ir="info">Info</button>
+    </nav>
+
+    <!-- Lámpara colgante: cada clic da más luz (tenue → media → toda) y uno más la apaga -->
+    <button id="lampara" aria-label="Light: off. Click for more light">
+      <span class="lampara-cable"></span>
+      <svg viewBox="0 0 100 60" aria-hidden="true">
+        <defs>
+          <radialGradient id="gHalo" cx="50%" cy="50%" r="50%">
+            <stop offset="0" stop-color="#fff4d6" stop-opacity="0.95" />
+            <stop offset="0.4" stop-color="#ffc977" stop-opacity="0.42" />
+            <stop offset="1" stop-color="#ffb04a" stop-opacity="0" />
+          </radialGradient>
+        </defs>
+        <circle class="lampara-halo" cx="50" cy="44" r="46" fill="url(#gHalo)" />
+        <g class="lampara-cuerpo">
+          <rect class="lampara-vastago" x="47" y="0" width="6" height="16" />
+          <path class="lampara-disco" d="M30 22 Q 50 10 70 22 Z" />
+          <path class="lampara-rendija" d="M31 23 L 69 23" />
+          <path class="lampara-disco" d="M14 38 Q 50 18 86 38 Z" />
+          <ellipse class="lampara-bombilla" cx="50" cy="40" rx="8" ry="3.5" />
+        </g>
+      </svg>
+    </button>
+
+    <div class="esquina inf-izq"><span id="contador">000</span><span class="tenue">/{total}</span></div>
+    <div class="esquina inf-centro">
+      <div id="titulo-hover" aria-live="polite"></div>
+      <div class="orden" role="tablist" aria-label="Sort the ring">
+        <button class="orden-btn activo" role="tab" aria-selected="true" data-orden="color">Color</button>
+        <span class="orden-riel" aria-hidden="true"><span class="orden-bola"></span></span>
+        <button class="orden-btn" role="tab" aria-selected="false" data-orden="viaje">Trips</button>
+      </div>
+    </div>
+    <!-- VISTA · ANILLO -->
+    <main id="escena" aria-label="Gallery" data-viajes={JSON.stringify(viajes.map(({ nombre, subtitulo, texto }) => ({ nombre, subtitulo, texto })))}>
+      <div id="etiquetas" aria-hidden="true"></div>
+      {fotos.map((f, i) => (
+        <button class="item" data-i={i} data-n={f.n} data-titulo={f.titulo} data-grande={f.grande} data-meta={f.meta} data-lugar={f.lugar} data-viaje={viajeDe(f.lugar)} data-sonido={f.sonido}
+          style={`--ratio:${f.ratio}`} aria-label={`Open photograph ${f.n}`}>
+          <img src={f.mini} alt={f.titulo || `Photograph ${f.n}`} loading="eager" decoding="async" draggable="false" />
+        </button>
+      ))}
+    </main>
+
+    <!-- Texto de los viajes (a la izquierda, solo en modo Viajes) -->
+    <aside id="viaje-texto" aria-live="polite" data-intro={viajesData.intro}>
+      <p class="vt-nombre"></p>
+      <p class="vt-cuerpo">{viajesData.intro}</p>
+    </aside>
+
+    <!-- VISTA · ÍNDICE -->
+    <section id="indice" class="panel" aria-label="Index of work">
+      <div class="orden orden-indice" role="tablist" aria-label="Sort the index" data-modo="color">
+        <button class="orden-btn activo" role="tab" aria-selected="true" data-orden="color">Color</button>
+        <span class="orden-riel" aria-hidden="true"><span class="orden-bola"></span></span>
+        <button class="orden-btn" role="tab" aria-selected="false" data-orden="viaje">Trips</button>
+      </div>
+      <ol class="rejilla">
+        {fotos.map((f, i) => (
+          <li class={f.ratio > 1 ? 'ancha' : ''}>
+            <button class="celda" data-i={i} data-viaje={viajeDe(f.lugar)} data-sonido={f.sonido}>
+              <span class={`celda-img${f.ratio > 1 ? ' horizontal' : ''}`} style={`--ratio:${f.ratio}`}>
+                <img src={f.mini} alt={f.titulo || `Photograph ${f.n}`} loading="lazy" decoding="async" />
+              </span>
+              <span class="celda-txt"><span class="tenue">{f.n}</span> {f.titulo}</span>
+            </button>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <!-- VISTA · ANTES / DESPUÉS -->
+    {parejas.length > 0 && (
+      <section id="edicion" class="panel" aria-label="Before and after editing">
+        <p class="edicion-intro tenue">Hover or drag the bar to reveal the edit.</p>
+        {parejas.map((p) => (
+          <figure class="comparador" style={`--ratio:${p.ratio}; --pos:50%`}>
+            <div class="comp-caja">
+              <img class="comp-antes" src={p.antes} alt={`${p.titulo} — before`} loading="lazy" decoding="async" draggable="false" />
+              <img class="comp-despues" src={p.despues} alt={`${p.titulo} — after`} loading="lazy" decoding="async" draggable="false" />
+              <span class="comp-etq izq">Before</span>
+              <span class="comp-etq der">After</span>
+              <span class="comp-linea" aria-hidden="true"><span class="comp-tirador">↔</span></span>
+              <input class="comp-rango" type="range" min="0" max="100" value="50" step="0.1" aria-label={`Compare ${p.titulo || p.n}: before and after`} />
+            </div>
+            <figcaption><span class="tenue">{p.n}</span> {p.titulo}</figcaption>
+          </figure>
+        ))}
+      </section>
+    )}
+
+    <!-- VISTA · INFO -->
+    <section id="info" class="panel" aria-label="About">
+      <div class="info-caja">
+        <svg class:list={["firma", "firma-info", { "firma-real": firma.real }]} viewBox={firma.viewBox} aria-hidden="true">
+          {firma.trazos.map((t) => <path d={t.d} transform={t.transform} pathLength="1" />)}
+        </svg>
+        <p class="info-titular">{config.titular}</p>
+        <p class="info-bio">{config.bio}</p>
+        <ul class="info-links">
+          {config.email && <li><span class="tenue">Say hello —</span> <a href={`mailto:${config.email}`}>{config.email}</a></li>}
+          {config.instagram && <li><a href={config.instagram} target="_blank" rel="noopener">Instagram ↗</a></li>}
+          {config.linkedin && <li><a href={config.linkedin} target="_blank" rel="noopener">LinkedIn ↗</a></li>}
+        </ul>
+      </div>
+    </section>
+
+    <!-- VISOR (zoom al hacer clic) -->
+    <div id="visor" aria-hidden="true">
+      <img id="visor-img" alt="" />
+      <div class="visor-pie">
+        <span id="visor-n"></span>
+        <span id="visor-titulo"></span>
+        <span id="visor-meta" class="tenue"></span>
+      </div>
+      <button class="visor-btn ant" aria-label="Previous">←</button>
+      <button class="visor-btn sig" aria-label="Next">→</button>
+      <button class="visor-btn cerrar" aria-label="Close">Close ✕</button>
+    </div>
+
+    <script>
+      import { iniciarPortfolio } from '../scripts/portfolio.ts';
+      import { iniciarLuz } from '../scripts/luz.ts';
+      import { iniciarComparadores } from '../scripts/comparador.ts';
+      import { dibujarEntrada } from '../scripts/firma.ts';
+      import { iniciarSonido } from '../scripts/sonido.ts';
+      import { analizarColores } from '../scripts/colores.ts';
+      iniciarLuz();
+      iniciarSonido();
+      iniciarComparadores();
+      // El análisis de color empieza ya, mientras se dibuja la firma
+      const colores = analizarColores(Array.from(document.querySelectorAll<HTMLImageElement>('#escena .item img')));
+      dibujarEntrada().then(() => colores).then(iniciarPortfolio);
+    </script>
+  </body>
+</html>

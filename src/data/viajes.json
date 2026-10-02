@@ -1,0 +1,83 @@
+{
+  "_ayuda": "Cada viaje agrupa varios 'lugares' (los de fotos.json). 'subtitulo' sale bajo el nombre en el anillo; 'texto' aparece a la izquierda al pasar el ratón por ese grupo. Cambia los textos a tu gusto; el orden de esta lista es el orden alrededor del círculo.",
+  "intro": "Every trip leaves behind a different way of seeing. Here they are grouped by destination — hover over each group to read its story.",
+  "viajes": [
+    {
+      "nombre": "Spain",
+      "subtitulo": "Madrid · Asturias · Segovia · Barcelona",
+      "texto": "Home. From the high plains to the Cantabrian Sea: the familiar, seen as if for the first time.",
+      "lugares": [
+        "Spain",
+        "Madrid",
+        "Asturias",
+        "Segovia",
+        "Barcelona"
+      ]
+    },
+    {
+      "nombre": "Italian Lakes",
+      "subtitulo": "Italy",
+      "texto": "Sunsets over the water and villages clinging to the mountainside.",
+      "lugares": [
+        "Italy"
+      ]
+    },
+    {
+      "nombre": "Europe",
+      "subtitulo": "Amsterdam · Berlin · Budapest",
+      "texto": "City escapes: canals, domes and façades mirrored in the water.",
+      "lugares": [
+        "Amsterdam",
+        "Berlin",
+        "Budapest"
+      ]
+    },
+    {
+      "nombre": "East Coast",
+      "subtitulo": "New York · Washington D.C.",
+      "texto": "Skyscrapers, bridges and lights that never go out.",
+      "lugares": [
+        "New York",
+        "Washington D.C."
+      ]
+    },
+    {
+      "nombre": "California",
+      "subtitulo": "San Francisco · Sausalito · Yosemite · San Diego",
+      "texto": "From the fog of the Bay to the beaches of the south, by way of Yosemite’s granite.",
+      "lugares": [
+        "San Francisco",
+        "Sausalito",
+        "California",
+        "Yosemite",
+        "San Diego"
+      ]
+    },
+    {
+      "nombre": "The Southwest",
+      "subtitulo": "Grand Canyon · Antelope Canyon",
+      "texto": "Red rock, light that cuts like a blade, and a scale no photograph can hold.",
+      "lugares": [
+        "Grand Canyon",
+        "Antelope Canyon"
+      ]
+    },
+    {
+      "nombre": "Islands",
+      "subtitulo": "Hawaii · Puerto Rico",
+      "texto": "Waterfalls in the jungle, fire in the Pacific night and palm trees leaning over the Caribbean.",
+      "lugares": [
+        "Hawaii",
+        "Puerto Rico"
+      ]
+    },
+    {
+      "nombre": "Unsorted",
+      "subtitulo": "Not yet placed",
+      "texto": "Loose photographs still waiting for a trip.",
+      "lugares": [
+        "Other"
+      ]
+    }
+  ]
+}

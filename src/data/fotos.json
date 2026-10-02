@@ -1,0 +1,392 @@
+{
+  "_ayuda": "Pon aquí título, año, categoría, lugar o sonido de cada foto (por su nombre de archivo en src/assets/galeria). Sonidos posibles: mar, lago, cascada, fuente, lluvia, bosque, campo, viento, ciudad, gente, estadio, concierto, acordeon, feria, campana, niebla, tranvia, bicicleta, puerto, fuego, gato, rana, leon, celda.",
+  "IMG_1360.jpg": {
+    "lugar": "Italy",
+    "sonido": "lago"
+  },
+  "IMG_1361.jpg": {
+    "lugar": "Italy",
+    "sonido": "lago"
+  },
+  "IMG_1363.jpg": {
+    "lugar": "Italy",
+    "sonido": "campana"
+  },
+  "IMG_1365.jpg": {
+    "lugar": "Italy",
+    "sonido": "bosque"
+  },
+  "IMG_1367.jpg": {
+    "lugar": "Italy",
+    "sonido": "bosque"
+  },
+  "IMG_1368.jpg": {
+    "lugar": "Madrid",
+    "sonido": "ciudad"
+  },
+  "IMG_1369.jpg": {
+    "lugar": "Spain",
+    "sonido": "viento"
+  },
+  "IMG_1370.jpg": {
+    "lugar": "Spain",
+    "sonido": "estadio"
+  },
+  "IMG_1371.jpg": {
+    "lugar": "Spain",
+    "sonido": "estadio"
+  },
+  "IMG_1377.jpg": {
+    "lugar": "Spain",
+    "sonido": "feria"
+  },
+  "IMG_1379.jpg": {
+    "lugar": "Spain",
+    "sonido": "mar"
+  },
+  "IMG_1380.jpg": {
+    "lugar": "Spain",
+    "sonido": "puerto"
+  },
+  "IMG_1381.jpg": {
+    "lugar": "Spain",
+    "sonido": "mar"
+  },
+  "IMG_1382.jpg": {
+    "lugar": "Spain",
+    "sonido": "mar"
+  },
+  "IMG_1384.jpg": {
+    "lugar": "Spain",
+    "sonido": "mar"
+  },
+  "IMG_1385.jpg": {
+    "lugar": "Spain",
+    "sonido": "mar"
+  },
+  "IMG_1386.jpg": {
+    "lugar": "Asturias",
+    "sonido": "campana"
+  },
+  "IMG_1387.jpg": {
+    "lugar": "Asturias",
+    "sonido": "bosque"
+  },
+  "IMG_1388.jpg": {
+    "lugar": "Asturias",
+    "sonido": "campana"
+  },
+  "IMG_1393.jpg": {
+    "lugar": "Madrid",
+    "sonido": "ciudad"
+  },
+  "IMG_1395.jpg": {
+    "lugar": "Spain",
+    "sonido": "campo"
+  },
+  "IMG_1396.jpg": {
+    "lugar": "Spain",
+    "sonido": "concierto"
+  },
+  "IMG_1397.jpg": {
+    "lugar": "Spain",
+    "sonido": "concierto"
+  },
+  "IMG_1398.jpg": {
+    "lugar": "Madrid",
+    "sonido": "ciudad"
+  },
+  "IMG_1399.jpg": {
+    "lugar": "Spain",
+    "sonido": "gente"
+  },
+  "IMG_1400.jpg": {
+    "lugar": "Asturias",
+    "sonido": "mar"
+  },
+  "IMG_1401.jpg": {
+    "lugar": "Hawaii",
+    "sonido": "cascada"
+  },
+  "IMG_1402.jpg": {
+    "lugar": "Hawaii",
+    "sonido": "cascada"
+  },
+  "IMG_1404.jpg": {
+    "lugar": "Hawaii",
+    "sonido": "bosque"
+  },
+  "IMG_1407.jpg": {
+    "lugar": "Hawaii",
+    "sonido": "fuego"
+  },
+  "IMG_1408.jpg": {
+    "lugar": "San Francisco",
+    "sonido": "mar"
+  },
+  "IMG_1409.jpg": {
+    "lugar": "San Francisco",
+    "sonido": "ciudad"
+  },
+  "IMG_1412.jpg": {
+    "lugar": "San Francisco",
+    "sonido": "bosque"
+  },
+  "IMG_1413.jpg": {
+    "lugar": "San Francisco",
+    "sonido": "bosque"
+  },
+  "IMG_1414.jpg": {
+    "lugar": "San Francisco",
+    "sonido": "ciudad"
+  },
+  "IMG_1415.jpg": {
+    "lugar": "San Francisco",
+    "sonido": "tranvia"
+  },
+  "IMG_1416.jpg": {
+    "lugar": "San Francisco",
+    "sonido": "viento"
+  },
+  "IMG_1418.jpg": {
+    "lugar": "San Francisco",
+    "sonido": "ciudad"
+  },
+  "IMG_1420.jpg": {
+    "lugar": "San Francisco",
+    "sonido": "puerto"
+  },
+  "IMG_1421.jpg": {
+    "lugar": "San Francisco",
+    "sonido": "niebla"
+  },
+  "IMG_1422.jpg": {
+    "lugar": "San Francisco",
+    "sonido": "niebla"
+  },
+  "IMG_1424.jpg": {
+    "lugar": "Barcelona",
+    "sonido": "campana"
+  },
+  "IMG_1431.jpg": {
+    "lugar": "Berlin",
+    "sonido": "fuente"
+  },
+  "IMG_1433.jpg": {
+    "lugar": "Amsterdam",
+    "sonido": "bicicleta"
+  },
+  "IMG_1434.jpg": {
+    "lugar": "Amsterdam",
+    "sonido": "gente"
+  },
+  "IMG_1435.jpg": {
+    "lugar": "Amsterdam",
+    "sonido": "bicicleta"
+  },
+  "IMG_1437.jpg": {
+    "lugar": "Spain",
+    "sonido": "mar"
+  },
+  "IMG_1438.jpg": {
+    "lugar": "Budapest",
+    "sonido": "ciudad"
+  },
+  "IMG_1440.jpg": {
+    "lugar": "Budapest",
+    "sonido": "acordeon"
+  },
+  "IMG_1445.jpg": {
+    "lugar": "Budapest",
+    "sonido": "lago"
+  },
+  "IMG_1448.jpg": {
+    "lugar": "California",
+    "sonido": "estadio"
+  },
+  "IMG_1449.jpg": {
+    "lugar": "California",
+    "sonido": "mar"
+  },
+  "IMG_1450.jpg": {
+    "lugar": "California",
+    "sonido": "mar"
+  },
+  "IMG_1451.jpg": {
+    "lugar": "California",
+    "sonido": "mar"
+  },
+  "IMG_1452.jpg": {
+    "lugar": "California",
+    "sonido": "mar"
+  },
+  "IMG_1453.jpg": {
+    "lugar": "California",
+    "sonido": "mar"
+  },
+  "IMG_1454.jpg": {
+    "lugar": "California",
+    "sonido": "mar"
+  },
+  "IMG_1455.jpg": {
+    "lugar": "Yosemite",
+    "sonido": "viento"
+  },
+  "IMG_1457.jpg": {
+    "lugar": "San Francisco",
+    "titulo": "Alcatraz",
+    "sonido": "celda"
+  },
+  "IMG_1458.jpg": {
+    "lugar": "California",
+    "sonido": "feria"
+  },
+  "IMG_1459.jpg": {
+    "lugar": "California",
+    "sonido": "mar"
+  },
+  "IMG_1460.jpg": {
+    "lugar": "Sausalito",
+    "sonido": "lago"
+  },
+  "IMG_1461.jpg": {
+    "lugar": "Sausalito",
+    "sonido": "lago"
+  },
+  "IMG_1462.jpg": {
+    "lugar": "Sausalito",
+    "sonido": "lago"
+  },
+  "IMG_1463.jpg": {
+    "lugar": "Grand Canyon",
+    "sonido": "viento"
+  },
+  "IMG_1464.jpg": {
+    "lugar": "Grand Canyon",
+    "sonido": "viento"
+  },
+  "IMG_1465.jpg": {
+    "lugar": "Grand Canyon",
+    "sonido": "viento"
+  },
+  "IMG_1466.jpg": {
+    "lugar": "Grand Canyon",
+    "sonido": "viento"
+  },
+  "IMG_1467.jpg": {
+    "lugar": "Grand Canyon",
+    "sonido": "bosque"
+  },
+  "IMG_1470.jpg": {
+    "lugar": "Antelope Canyon",
+    "sonido": "viento"
+  },
+  "IMG_1471.jpg": {
+    "lugar": "Antelope Canyon",
+    "sonido": "viento"
+  },
+  "IMG_1472.jpg": {
+    "lugar": "Antelope Canyon",
+    "sonido": "viento"
+  },
+  "IMG_1473.jpg": {
+    "lugar": "Washington D.C.",
+    "sonido": "lago"
+  },
+  "IMG_1476.jpg": {
+    "lugar": "New York",
+    "sonido": "ciudad"
+  },
+  "IMG_1478.jpg": {
+    "lugar": "New York",
+    "sonido": "ciudad"
+  },
+  "IMG_1479.jpg": {
+    "lugar": "New York",
+    "sonido": "bosque"
+  },
+  "IMG_1480.jpg": {
+    "lugar": "New York",
+    "sonido": "gente"
+  },
+  "IMG_1482.jpg": {
+    "lugar": "New York",
+    "sonido": "ciudad"
+  },
+  "IMG_1483.jpg": {
+    "lugar": "New York",
+    "sonido": "ciudad"
+  },
+  "IMG_1485.jpg": {
+    "lugar": "New York",
+    "sonido": "puerto"
+  },
+  "IMG_1486.jpg": {
+    "lugar": "New York",
+    "sonido": "ciudad"
+  },
+  "IMG_1487.jpg": {
+    "lugar": "New York",
+    "sonido": "lluvia"
+  },
+  "IMG_1488.jpg": {
+    "lugar": "New York",
+    "sonido": "ciudad"
+  },
+  "IMG_1490.jpg": {
+    "lugar": "New York",
+    "sonido": "ciudad"
+  },
+  "IMG_1491.jpg": {
+    "lugar": "San Diego",
+    "sonido": "mar"
+  },
+  "IMG_1492.jpg": {
+    "lugar": "San Diego",
+    "sonido": "leon"
+  },
+  "IMG_1496.jpg": {
+    "lugar": "San Diego",
+    "sonido": "puerto"
+  },
+  "IMG_1500.jpg": {
+    "lugar": "Puerto Rico",
+    "sonido": "mar"
+  },
+  "IMG_1502.jpg": {
+    "lugar": "Segovia",
+    "sonido": "bosque"
+  },
+  "IMG_1503.jpg": {
+    "lugar": "Madrid",
+    "sonido": "lago"
+  },
+  "IMG_1505.jpg": {
+    "lugar": "Spain",
+    "sonido": "ciudad"
+  },
+  "IMG_1507.jpg": {
+    "lugar": "Spain",
+    "sonido": "mar"
+  },
+  "IMG_1508.jpg": {
+    "lugar": "Spain",
+    "sonido": "gato"
+  },
+  "IMG_1509.jpg": {
+    "lugar": "Spain",
+    "sonido": "campo"
+  },
+  "IMG_1510.jpg": {
+    "lugar": "Spain",
+    "sonido": "viento"
+  },
+  "IMG_1511.jpg": {
+    "lugar": "Spain",
+    "sonido": "mar"
+  },
+  "IMG_1512.jpg": {
+    "lugar": "Spain",
+    "sonido": "rana"
+  }
+}

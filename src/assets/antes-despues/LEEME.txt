@@ -1,0 +1,8 @@
+ANTES / DESPUÉS
+Parejas de fotos con el mismo nombre terminado en -antes y -despues:
+
+  atardecer-antes.jpg     atardecer-despues.jpg
+  nueva-york-antes.jpg    nueva-york-despues.jpg
+
+La web las empareja sola. Si no hay ninguna pareja, la sección no aparece en el menú.
+Las dos versiones deben tener el mismo tamaño y encuadre.
