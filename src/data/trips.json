@@ -1,0 +1,82 @@
+{
+  "intro": "Every trip leaves behind a different way of seeing. Here they are grouped by destination — hover over each group to read its story.",
+  "trips": [
+    {
+      "name": "Spain",
+      "subtitle": "Madrid · Asturias · Segovia · Barcelona",
+      "text": "Home. From the high plains to the Cantabrian Sea: the familiar, seen as if for the first time.",
+      "places": [
+        "Spain",
+        "Madrid",
+        "Asturias",
+        "Segovia",
+        "Barcelona"
+      ]
+    },
+    {
+      "name": "Italian Lakes",
+      "subtitle": "Italy",
+      "text": "Sunsets over the water and villages clinging to the mountainside.",
+      "places": [
+        "Italy"
+      ]
+    },
+    {
+      "name": "Europe",
+      "subtitle": "Amsterdam · Berlin · Budapest",
+      "text": "City escapes: canals, domes and façades mirrored in the water.",
+      "places": [
+        "Amsterdam",
+        "Berlin",
+        "Budapest"
+      ]
+    },
+    {
+      "name": "East Coast",
+      "subtitle": "New York · Washington D.C.",
+      "text": "Skyscrapers, bridges and lights that never go out.",
+      "places": [
+        "New York",
+        "Washington D.C."
+      ]
+    },
+    {
+      "name": "California",
+      "subtitle": "San Francisco · Sausalito · Yosemite · San Diego",
+      "text": "From the fog of the Bay to the beaches of the south, by way of Yosemite’s granite.",
+      "places": [
+        "San Francisco",
+        "Sausalito",
+        "California",
+        "Yosemite",
+        "San Diego"
+      ]
+    },
+    {
+      "name": "The Southwest",
+      "subtitle": "Grand Canyon · Antelope Canyon",
+      "text": "Red rock, light that cuts like a blade, and a scale no photograph can hold.",
+      "places": [
+        "Grand Canyon",
+        "Antelope Canyon"
+      ]
+    },
+    {
+      "name": "Islands",
+      "subtitle": "Hawaii · Puerto Rico",
+      "text": "Waterfalls in the jungle, fire in the Pacific night and palm trees leaning over the Caribbean.",
+      "places": [
+        "Hawaii",
+        "Puerto Rico"
+      ]
+    },
+    {
+      "name": "Unsorted",
+      "subtitle": "Not yet placed",
+      "text": "Loose photographs still waiting for a trip.",
+      "places": [
+        "Other"
+      ]
+    }
+  ]
+}
