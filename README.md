@@ -16,4 +16,6 @@ npm run build
 
 Photos go in `src/assets/gallery`, their places in `src/data/photos.json` and the trips in `src/data/trips.json`.
 
+Before/after pairs go in `src/assets/before-after`, named `name-before.jpg` and `name-after.jpg`. The section shows up in the menu once there is at least one pair.
+
 All photographs © Bárbara Hernández.

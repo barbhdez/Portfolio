@@ -4,8 +4,10 @@ import '../styles/global.css';
 import config from '../data/config.json';
 import photoInfo from '../data/photos.json';
 import tripData from '../data/trips.json';
-import { buildSignature } from '../lib/signature';
+import strings from '../data/translations.json';
+import { loadSignature } from '../lib/signature';
 
+const en = strings.en;
 const byName = (a: string, b: string) => a.localeCompare(b, 'en', { numeric: true });
 const fileName = (p: string) => p.split('/').pop()!;
 
@@ -21,14 +23,13 @@ const photos = await Promise.all(
   Object.keys(files).sort(byName).map(async (p, i) => {
     const src = files[p].default;
     const name = fileName(p);
-    const info = (photoInfo as Record<string, { place?: string; title?: string; year?: string }>)[name] ?? {};
+    const info = (photoInfo as Record<string, { place?: string; title?: string }>)[name] ?? {};
     const thumb = await getImage({ src, width: Math.min(420, src.width), format: 'webp', quality: 72 });
     const large = await getImage({ src, width: Math.min(2000, src.width), format: 'webp', quality: 82 });
     return {
       n: String(i + 1).padStart(3, '0'),
       title: info.title || titleFromFile(name),
       place: info.place || 'Other',
-      meta: [info.place, info.year].filter(Boolean).join(' · '),
       thumb: thumb.src,
       large: large.src,
       ratio: src.width / src.height,
@@ -67,7 +68,7 @@ const pairs = await Promise.all(
     })
 );
 
-const signature = buildSignature(config.signature || config.name);
+const signature = loadSignature();
 ---
 
 <html lang="en" data-theme="dark" data-light="0">
@@ -75,11 +76,13 @@ const signature = buildSignature(config.signature || config.name);
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{config.name} — Portfolio</title>
-    <meta name="description" content={`${config.name} · ${config.role}. ${config.headline}`} />
+    <meta name="description" content={`${config.name} · ${en.role}. ${config.headline}`} />
     <meta property="og:title" content={`${config.name} — Portfolio`} />
-    <meta property="og:description" content={config.bio} />
+    <meta property="og:description" content={en.bio} />
     {photos[0] && <meta property="og:image" content={photos[0].large} />}
     <meta name="theme-color" content="#0c0c0b" />
+    <meta name="format-detection" content="telephone=no, date=no, address=no, email=no" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <script is:inline>
       try { const n = Number(localStorage.getItem('light') || 0); if (n >= 0 && n <= 3) { const h = document.documentElement; h.dataset.light = String(n); h.dataset.theme = n >= 2 ? 'light' : 'dark'; } } catch (e) {}
     </script>
@@ -95,75 +98,83 @@ const signature = buildSignature(config.signature || config.name);
     <div class="grain" aria-hidden="true"></div>
 
     <div id="intro" aria-hidden="true">
-      <svg class:list={["signature", "signature-large", { "signature-strokes": signature.handDrawn }]} viewBox={signature.viewBox}>
+      <svg class="signature signature-large" viewBox={signature.viewBox}>
         {signature.strokes.map((s) => <path d={s.d} transform={s.transform} pathLength="1" />)}
       </svg>
     </div>
 
     <header class="corner top-left">
       <a href="/" class="brand" aria-label={config.name}>
-        <svg class:list={["signature", "signature-small", { "signature-strokes": signature.handDrawn }]} viewBox={signature.viewBox} aria-hidden="true">
+        <svg class="signature signature-small" viewBox={signature.viewBox} aria-hidden="true">
           {signature.strokes.map((s) => <path d={s.d} transform={s.transform} pathLength="1" />)}
         </svg>
       </a>
-      <span class="muted">{config.role}</span>
+      <span class="muted" data-i18n="role">{en.role}</span>
     </header>
 
     <nav class="corner top-right">
-      <button class="nav-btn active" data-go="ring">Ring</button>
-      <button class="nav-btn" data-go="index">Index</button>
-      {pairs.length > 0 && <button class="nav-btn" data-go="before-after">Before/After</button>}
-      <button class="nav-btn" data-go="info">Info</button>
+      <button class="nav-btn active" data-go="ring" data-i18n="nav.ring">{en["nav.ring"]}</button>
+      <button class="nav-btn" data-go="index" data-i18n="nav.index">{en["nav.index"]}</button>
+      {pairs.length > 0 && <button class="nav-btn" data-go="before-after" data-i18n="nav.beforeAfter">{en["nav.beforeAfter"]}</button>}
+      <button class="nav-btn" data-go="info" data-i18n="nav.info">{en["nav.info"]}</button>
     </nav>
 
-    <button id="lamp" aria-label="Light: off. Click for more light">
+    <div id="lamp">
       <span class="lamp-cord"></span>
-      <svg viewBox="0 0 12 12" aria-hidden="true">
-        <defs>
-          <radialGradient id="lampGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0" stop-color="#fff4d6" stop-opacity="0.95" />
-            <stop offset="0.4" stop-color="#ffc977" stop-opacity="0.42" />
-            <stop offset="1" stop-color="#ffb04a" stop-opacity="0" />
-          </radialGradient>
-        </defs>
-        <circle class="lamp-halo" cx="6" cy="6" r="20" fill="url(#lampGlow)" />
-        <g class="lamp-body">
-          <circle class="lamp-bulb" cx="6" cy="6" r="4" />
-        </g>
-      </svg>
-      <span class="lamp-hint">On</span>
-    </button>
+      <button class="lamp-switch" aria-label={en["lamp.aria"]}>
+        <svg viewBox="0 0 12 12" aria-hidden="true">
+          <defs>
+            <radialGradient id="lampGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0" stop-color="#fff4d6" stop-opacity="0.95" />
+              <stop offset="0.4" stop-color="#ffc977" stop-opacity="0.42" />
+              <stop offset="1" stop-color="#ffb04a" stop-opacity="0" />
+            </radialGradient>
+          </defs>
+          <circle class="lamp-halo" cx="6" cy="6" r="20" fill="url(#lampGlow)" />
+          <g class="lamp-body">
+            <circle class="lamp-bulb" cx="6" cy="6" r="4" />
+          </g>
+        </svg>
+      </button>
+      <span class="lamp-hint">{en["lamp.on"]}</span>
+    </div>
+
+    <div class="corner bottom-right lang" role="group" aria-label={en.language} data-i18n-label="language">
+      <button class="lang-btn active" data-lang="en" aria-pressed="true">EN</button>
+      <button class="lang-btn" data-lang="es" aria-pressed="false">ES</button>
+      <button class="lang-btn" data-lang="fr" aria-pressed="false">FR</button>
+    </div>
 
     <div class="corner bottom-left"><span id="counter">000</span><span class="muted">/{total}</span></div>
     <div class="corner bottom-center">
       <div id="hover-title" aria-live="polite"></div>
       <div class="sort" role="tablist" aria-label="Sort the ring" data-mode="color">
-        <button class="sort-btn active" role="tab" aria-selected="true" data-sort="color">Color</button>
+        <button class="sort-btn active" role="tab" aria-selected="true" data-sort="color" data-i18n="sort.color">{en["sort.color"]}</button>
         <span class="sort-track" aria-hidden="true"><span class="sort-knob"></span></span>
-        <button class="sort-btn" role="tab" aria-selected="false" data-sort="trip">Trips</button>
+        <button class="sort-btn" role="tab" aria-selected="false" data-sort="trip" data-i18n="sort.trip">{en["sort.trip"]}</button>
       </div>
     </div>
 
     <main id="scene" aria-label="Gallery" data-trips={JSON.stringify(trips.map(({ name, subtitle, text }) => ({ name, subtitle, text })))}>
       <div id="labels" aria-hidden="true"></div>
       {photos.map((p, i) => (
-        <button class="item" data-i={i} data-n={p.n} data-title={p.title} data-large={p.large} data-meta={p.meta} data-place={p.place} data-trip={tripOf(p.place)}
-          style={`--ratio:${p.ratio}`} aria-label={`Open photograph ${p.n}`}>
+        <button class="item" data-i={i} data-title={p.title} data-large={p.large} data-place={p.place} data-trip={tripOf(p.place)}
+          style={`--ratio:${p.ratio}`} aria-label={`${p.n} ${p.title || p.place}`}>
           <img src={p.thumb} alt={p.title || `Photograph ${p.n}`} loading="eager" decoding="async" draggable="false" />
         </button>
       ))}
     </main>
 
-    <aside id="trip-text" aria-live="polite" data-intro={tripData.intro}>
+    <aside id="trip-text" aria-live="polite">
       <p class="tt-name"></p>
-      <p class="tt-body">{tripData.intro}</p>
+      <p class="tt-body">{en.tripsIntro}</p>
     </aside>
 
     <section id="index" class="panel" aria-label="Index of work">
       <div class="sort sort-index" role="tablist" aria-label="Sort the index" data-mode="color">
-        <button class="sort-btn active" role="tab" aria-selected="true" data-sort="color">Color</button>
+        <button class="sort-btn active" role="tab" aria-selected="true" data-sort="color" data-i18n="sort.color">{en["sort.color"]}</button>
         <span class="sort-track" aria-hidden="true"><span class="sort-knob"></span></span>
-        <button class="sort-btn" role="tab" aria-selected="false" data-sort="trip">Trips</button>
+        <button class="sort-btn" role="tab" aria-selected="false" data-sort="trip" data-i18n="sort.trip">{en["sort.trip"]}</button>
       </div>
       <ol class="grid">
         {photos.map((p, i) => (
@@ -181,18 +192,19 @@ const signature = buildSignature(config.signature || config.name);
 
     {pairs.length > 0 && (
       <section id="before-after" class="panel" aria-label="Before and after editing">
-        <p class="before-after-intro muted">Hover or drag the bar to reveal the edit.</p>
+        <p class="before-after-intro muted" data-i18n="ba.intro">{en["ba.intro"]}</p>
         {pairs.map((p) => (
-          <figure class="compare" style={`--ratio:${p.ratio}; --pos:50%`}>
-            <div class="compare-frame">
-              <img class="compare-before" src={p.before} alt={`${p.title} — before`} loading="lazy" decoding="async" draggable="false" />
-              <img class="compare-after" src={p.after} alt={`${p.title} — after`} loading="lazy" decoding="async" draggable="false" />
-              <span class="compare-tag left">Before</span>
-              <span class="compare-tag right">After</span>
-              <span class="compare-line" aria-hidden="true"><span class="compare-handle">↔</span></span>
-              <input class="compare-range" type="range" min="0" max="100" value="50" step="0.1" aria-label={`Compare ${p.title || p.n}: before and after`} />
+          <figure class="compare" style={`--ratio:${p.ratio}`}>
+            <div class="compare-stage">
+              <div class="compare-frame" style="--pos:0%">
+                <img class="compare-before" src={p.before} alt={`${p.title || p.n} — before`} loading="lazy" decoding="async" draggable="false" />
+                <img class="compare-after" src={p.after} alt={`${p.title || p.n} — after`} loading="lazy" decoding="async" draggable="false" />
+                <span class="compare-line" aria-hidden="true"></span>
+                <span class="compare-tag after" data-i18n="ba.after">{en["ba.after"]}</span>
+                <span class="compare-tag before" data-i18n="ba.before">{en["ba.before"]}</span>
+              </div>
+              <figcaption><span class="muted">{p.n}</span> {p.title}</figcaption>
             </div>
-            <figcaption><span class="muted">{p.n}</span> {p.title}</figcaption>
           </figure>
         ))}
       </section>
@@ -200,15 +212,10 @@ const signature = buildSignature(config.signature || config.name);
 
     <section id="info" class="panel" aria-label="About">
       <div class="info-box">
-        <svg class:list={["signature", "signature-info", { "signature-strokes": signature.handDrawn }]} viewBox={signature.viewBox} aria-hidden="true">
-          {signature.strokes.map((s) => <path d={s.d} transform={s.transform} pathLength="1" />)}
-        </svg>
         <p class="info-headline">{config.headline}</p>
-        <p class="info-bio">{config.bio}</p>
+        <p class="info-bio" data-i18n="bio">{en.bio}</p>
         <ul class="info-links">
-          {config.email && <li><span class="muted">Say hello —</span> <a href={`mailto:${config.email}`}>{config.email}</a></li>}
-          {config.instagram && <li><a href={config.instagram} target="_blank" rel="noopener">Instagram ↗</a></li>}
-          {config.linkedin && <li><a href={config.linkedin} target="_blank" rel="noopener">LinkedIn ↗</a></li>}
+          {config.email && <li><span class="muted" data-i18n="sayHello">{en.sayHello}</span> <a href={`mailto:${config.email}`}>{config.email}</a></li>}
         </ul>
       </div>
     </section>
@@ -220,18 +227,20 @@ const signature = buildSignature(config.signature || config.name);
         <span id="viewer-title"></span>
         <span id="viewer-meta" class="muted"></span>
       </div>
-      <button class="viewer-btn prev" aria-label="Previous">←</button>
-      <button class="viewer-btn next" aria-label="Next">→</button>
-      <button class="viewer-btn close" aria-label="Close">Close ✕</button>
+      <button class="viewer-btn prev" aria-label={en.prev} data-i18n-label="prev">←</button>
+      <button class="viewer-btn next" aria-label={en.next} data-i18n-label="next">→</button>
+      <button class="viewer-btn close" aria-label={en.close} data-i18n-label="close"><span data-i18n="close">{en.close}</span> ✕</button>
     </div>
 
     <script>
+      import { initLang } from '../scripts/i18n.ts';
       import { initPortfolio } from '../scripts/portfolio.ts';
       import { initLight } from '../scripts/light.ts';
       import { initCompare } from '../scripts/compare.ts';
       import { playIntro } from '../scripts/signature.ts';
       import { initSound } from '../scripts/sound.ts';
       import { analyseColors } from '../scripts/colors.ts';
+      initLang();
       initLight();
       initSound();
       initCompare();

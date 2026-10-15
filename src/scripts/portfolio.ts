@@ -1,6 +1,7 @@
 import { gsap } from 'gsap';
 import { tap } from './sound';
 import type { Color } from './colors';
+import { t, pick, place, onLangChange, type Localized } from './i18n';
 
 type Photo = {
   el: HTMLElement;
@@ -15,7 +16,7 @@ type Photo = {
   opacity: number;
 };
 type Mode = 'color' | 'trip';
-type Trip = { name: string; subtitle: string; text: string };
+type Trip = { name: Localized; subtitle: Localized; text: Localized };
 
 const SPIN_SPEED = 0.035; // rad/s
 const PARALLAX = 22;      // px
@@ -43,7 +44,8 @@ export function initPortfolio(colors: Color[] = []) {
 
   function computeSlots() {
     const vw = innerWidth, vh = innerHeight;
-    rMax = Math.min(vw, vh) * (vw < 700 ? 0.42 : 0.355);
+    // leave room for the bottom controls on short screens (phones in landscape)
+    rMax = Math.min(Math.min(vw, vh) * (vw < 700 ? 0.42 : 0.355), vh / 2 - 85);
     let rings: { r: number; cap: number }[] = [];
     // largest thumbnail size that fits every photo
     for (side = 110; side > 14; side -= 2) {
@@ -85,7 +87,7 @@ export function initPortfolio(colors: Color[] = []) {
     order.forEach((idx, k) => {
       const p = photos[idx], s = slots[k];
       if (!animate) { p.angle = s.angle; p.radius = s.radius; p.depth = s.depth; return; }
-      gsap.to(p, { angle: p.angle + turn(p.angle, s.angle), radius: s.radius, depth: s.depth, duration: 1.6, ease: 'expo.inOut', delay: (k / N) * 0.35 });
+      gsap.to(p, { angle: p.angle + turn(p.angle, s.angle), radius: s.radius, depth: s.depth, duration: 1.6, ease: 'expo.inOut', delay: (k / N) * 0.35, overwrite: 'auto' });
     });
   }
 
@@ -100,7 +102,6 @@ export function initPortfolio(colors: Color[] = []) {
   const tripText = document.getElementById('trip-text')!;
   const ttName = tripText.querySelector<HTMLElement>('.tt-name')!;
   const ttBody = tripText.querySelector<HTMLElement>('.tt-body')!;
-  const intro = tripText.dataset.intro || '';
   const ringSwitch = document.querySelector<HTMLElement>('.bottom-center .sort')!;
   let mode: Mode = 'color';
   let labels: { el: HTMLElement; x: number; y: number; trip: number }[] = [];
@@ -113,10 +114,15 @@ export function initPortfolio(colors: Color[] = []) {
     });
   }
 
+  function fillLabel(el: HTMLElement, trip: number) {
+    el.querySelector('strong')!.textContent = pick(trips[trip].name);
+    el.querySelector('small')!.textContent = `${pick(trips[trip].subtitle)} · ${el.dataset.count}`;
+  }
+
   // trips mode: one sunflower-spiral cluster per trip, laid out around a circle
   function layoutTrips() {
     const mobile = innerWidth < 700;
-    const offX = mobile ? 0 : Math.min(innerWidth * 0.16, 290);
+    const offX = innerWidth < 900 ? 0 : Math.min(innerWidth * 0.16, 290);
     const zoom = mobile ? 0.62 : 0.8;
     const groups = trips.map(() => [] as number[]);
     photos.forEach((_, idx) => groups[tripOf(idx)].push(idx));
@@ -124,7 +130,7 @@ export function initPortfolio(colors: Color[] = []) {
     const used = groups.map((g, trip) => ({ g, trip })).filter((x) => x.g.length);
 
     const labelMargin = mobile ? 34 : 56;
-    const R0 = Math.min(innerHeight / 2 - labelMargin - side * 0.6, innerWidth / 2 - offX - labelMargin * 2.4);
+    const R0 = Math.min(innerHeight / 2 - labelMargin - side * 0.6 - (innerHeight < 500 ? 30 : 0), innerWidth / 2 - offX - labelMargin * 2.4);
     let c = side * 0.5 * zoom, R = R0 * 0.62;
     const islandR = (n: number) => c * Math.sqrt(n) + side * 0.45 * zoom;
     for (let it = 0; it < 5; it++) {
@@ -151,14 +157,23 @@ export function initPortfolio(colors: Color[] = []) {
       const el = document.createElement('div');
       el.className = 'label';
       el.innerHTML = '<strong></strong><small></small>';
-      el.querySelector('strong')!.textContent = trips[trip].name;
-      el.querySelector('small')!.textContent = `${trips[trip].subtitle} · ${g.length}`;
+      el.dataset.count = String(g.length);
+      fillLabel(el, trip);
       const ux = Math.cos(a), uy = Math.sin(a);
       el.style.textAlign = ux < -0.3 ? 'right' : ux > 0.3 ? 'left' : 'center';
       el.style.setProperty('--tx', ux < -0.3 ? '-100%' : ux > 0.3 ? '0%' : '-50%');
       el.style.setProperty('--ty', uy < -0.3 ? '-100%' : uy > 0.3 ? '0%' : '-50%');
       labelBox.appendChild(el);
       next.push({ el, x: cx + ux * (r + 10), y: cy + uy * (r + 10), trip });
+    }
+    // nudge labels that would fall off screen or onto the bottom controls
+    const margin = 16, bottom = innerHeight - 64;
+    for (const l of next) {
+      const w = l.el.offsetWidth, h = l.el.offsetHeight;
+      const tx = parseFloat(l.el.style.getPropertyValue('--tx')) / 100, ty = parseFloat(l.el.style.getPropertyValue('--ty')) / 100;
+      const left = innerWidth / 2 + offX + l.x + tx * w, top = innerHeight / 2 + l.y + ty * h;
+      l.x += Math.max(margin - left, Math.min(0, innerWidth - margin - w - left));
+      l.y += Math.max(margin - top, Math.min(0, bottom - h - top));
     }
     labels = next;
     return { targets, offX, zoom };
@@ -182,16 +197,18 @@ export function initPortfolio(colors: Color[] = []) {
       const p = photos[idx];
       const angle = p.angle + turn(p.angle, Math.atan2(y, x) - spin);
       const radius = Math.hypot(x, y);
-      if (animate) gsap.to(p, { angle, radius, depth: 0.4, duration: 1.6, ease: 'expo.inOut', delay: (k / N) * 0.3 });
+      if (animate) gsap.to(p, { angle, radius, depth: 0.4, duration: 1.6, ease: 'expo.inOut', delay: (k / N) * 0.3, overwrite: 'auto' });
       else Object.assign(p, { angle, radius, depth: 0.4 });
     });
     gsap.fromTo(labelBox.children, { opacity: 0 }, { opacity: 1, duration: 0.8, delay: animate ? 1.1 : 0, stagger: 0.05 });
     showTrip(-1);
   }
 
+  let shownTrip = -1;
   function showTrip(trip: number) {
-    const name = trip < 0 ? '' : trips[trip]?.name ?? '';
-    const body = trip < 0 ? intro : trips[trip]?.text ?? '';
+    shownTrip = trip;
+    const name = trip < 0 ? '' : pick(trips[trip].name);
+    const body = trip < 0 ? t('tripsIntro') : pick(trips[trip].text);
     labels.forEach((l) => l.el.classList.toggle('active', l.trip === trip));
     if (ttBody.textContent === body && ttName.textContent === name) return;
     gsap.killTweensOf([ttName, ttBody]);
@@ -241,7 +258,9 @@ export function initPortfolio(colors: Color[] = []) {
 
   const grid = document.querySelector<HTMLElement>('#index .grid');
   const indexSwitch = document.querySelector('.sort-index');
-  function sortIndex(m: Mode) {
+  let indexMode: Mode = 'color';
+  function sortIndex(m: Mode, animate = true) {
+    indexMode = m;
     if (!grid) return;
     markSwitch(indexSwitch, m);
     grid.querySelectorAll('.trip-header').forEach((h) => h.remove());
@@ -257,14 +276,14 @@ export function initPortfolio(colors: Color[] = []) {
         const header = document.createElement('li');
         header.className = 'trip-header';
         header.innerHTML = '<h3></h3><p class="muted"></p><p class="trip-header-text"></p>';
-        header.querySelector('h3')!.textContent = trips[trip].name;
-        header.querySelector('.muted')!.textContent = `${trips[trip].subtitle} · ${group.length} photos`;
-        header.querySelector('.trip-header-text')!.textContent = trips[trip].text;
+        header.querySelector('h3')!.textContent = pick(trips[trip].name);
+        header.querySelector('.muted')!.textContent = `${pick(trips[trip].subtitle)} · ${group.length} ${t('photos')}`;
+        header.querySelector('.trip-header-text')!.textContent = pick(trips[trip].text);
         grid.appendChild(header);
         group.sort((a, b) => colorKey(idxOf(a)) - colorKey(idxOf(b))).forEach((li) => grid.appendChild(li));
       });
     }
-    gsap.fromTo(grid.children, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out', stagger: 0.006 });
+    if (animate) gsap.fromTo(grid.children, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out', stagger: 0.006 });
   }
   sortIndex('color');
   indexSwitch?.querySelectorAll<HTMLButtonElement>('.sort-btn').forEach((b) =>
@@ -325,8 +344,8 @@ export function initPortfolio(colors: Color[] = []) {
       photos.forEach((o, k) => o.el.classList.toggle('same-trip', tripOf(k) === trip));
       showTrip(trip);
     }
-    gsap.to(p, { focus: 1, duration: FOCUS_TIME, ease: 'power3.inOut', overwrite: true });
-    hoverTitle.textContent = p.el.dataset.title || p.el.dataset.place || '';
+    gsap.to(p, { focus: 1, duration: FOCUS_TIME, ease: 'power3.inOut', overwrite: 'auto' });
+    hoverTitle.textContent = p.el.dataset.title || place(p.el.dataset.place || '');
     setCounter(i + 1);
     tap();
   }
@@ -339,14 +358,14 @@ export function initPortfolio(colors: Color[] = []) {
     scene.classList.remove('hovering');
     photos.forEach((o) => o.el.classList.remove('same-trip'));
     hoverTitle.textContent = '';
-    gsap.to(p, { focus: 0, duration: 0.6, ease: 'power3.out', overwrite: true });
+    gsap.to(p, { focus: 0, duration: 0.6, ease: 'power3.out', overwrite: 'auto' });
   }
 
   function pin(p: Photo) {
     pinned = p;
     p.el.classList.add('pinned', 'hover');
     scene.classList.add('hovering', 'has-pinned');
-    gsap.to(p, { focus: 1, duration: Math.max(0.35, (1 - p.focus) * FOCUS_TIME), ease: 'power3.out', overwrite: true });
+    gsap.to(p, { focus: 1, duration: Math.max(0.35, (1 - p.focus) * FOCUS_TIME), ease: 'power3.out', overwrite: 'auto' });
   }
 
   function unpin() {
@@ -425,7 +444,7 @@ export function initPortfolio(colors: Color[] = []) {
     const d = photos[i].el.dataset;
     vN.textContent = `${String(i + 1).padStart(3, '0')}/${String(N).padStart(3, '0')}`;
     vTitle.textContent = d.title ?? '';
-    vMeta.textContent = d.meta ?? '';
+    vMeta.textContent = place(d.place ?? '');
   }
 
   function open(i: number, from: HTMLElement) {
@@ -519,6 +538,18 @@ export function initPortfolio(colors: Color[] = []) {
     if (Math.abs(d) > 50) { ev.preventDefault(); step(d < 0 ? 1 : -1); }
   });
 
+  // language switch: rewrite every piece of text built here
+  onLangChange(() => {
+    labels.forEach((l) => fillLabel(l.el, l.trip));
+    if (mode === 'trip') {
+      ttName.textContent = shownTrip < 0 ? '' : pick(trips[shownTrip].name);
+      ttBody.textContent = shownTrip < 0 ? t('tripsIntro') : pick(trips[shownTrip].text);
+    }
+    if (indexMode === 'trip') sortIndex('trip', false);
+    if (focused) hoverTitle.textContent = focused.el.dataset.title || place(focused.el.dataset.place || '');
+    if (current >= 0) fillCaption(current);
+  });
+
   const index = document.getElementById('index')!;
   const panels = Array.from(document.querySelectorAll<HTMLElement>('.panel'));
   const navButtons = document.querySelectorAll<HTMLButtonElement>('.nav-btn[data-go]');
@@ -531,10 +562,9 @@ export function initPortfolio(colors: Color[] = []) {
       if (panel.id === target) {
         panel.scrollTop = 0;
         gsap.fromTo(panel, { autoAlpha: 0, y: 20 }, { autoAlpha: 1, y: 0, duration: 0.6, ease: 'expo.out' });
-        const children = panel.querySelectorAll('li, .compare, .info-box > *');
+        const children = panel.querySelectorAll('li, .info-box > *');
         gsap.fromTo(children, { opacity: 0, y: 16 },
           { opacity: 1, y: 0, duration: 0.7, ease: 'expo.out', stagger: { each: 0.015, from: 'start' } });
-        if (target === 'info') panel.dispatchEvent(new CustomEvent('show'));
       } else {
         gsap.to(panel, { autoAlpha: 0, duration: 0.35 });
       }
