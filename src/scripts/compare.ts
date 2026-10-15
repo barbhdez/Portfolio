@@ -1,32 +1,30 @@
-import { gsap } from 'gsap';
-
+// Before/after: scrolling through each pair wipes the edited version down over the original.
 export function initCompare() {
-  document.querySelectorAll<HTMLElement>('.compare').forEach((fig) => {
-    const frame = fig.querySelector<HTMLElement>('.compare-frame')!;
-    const range = fig.querySelector<HTMLInputElement>('.compare-range')!;
-    const state = { p: 50 };
-    const paint = () => fig.style.setProperty('--pos', `${state.p}%`);
-    const moveTo = gsap.quickTo(state, 'p', { duration: 0.45, ease: 'power3.out', onUpdate: paint });
+  const panel = document.getElementById('before-after');
+  if (!panel) return;
+  const pairs = Array.from(panel.querySelectorAll<HTMLElement>('.compare')).map((fig) => ({
+    fig,
+    frame: fig.querySelector<HTMLElement>('.compare-frame')!,
+    before: fig.querySelector<HTMLElement>('.compare-tag.before')!,
+    after: fig.querySelector<HTMLElement>('.compare-tag.after')!,
+  }));
+  let queued = false;
 
-    frame.addEventListener('pointermove', (ev) => {
-      if (ev.pointerType !== 'mouse') return;
-      const r = frame.getBoundingClientRect();
-      const p = Math.min(100, Math.max(0, ((ev.clientX - r.left) / r.width) * 100));
-      range.value = String(p);
-      moveTo(p);
-    });
-    // touch / keyboard
-    range.addEventListener('input', () => { state.p = Number(range.value); gsap.killTweensOf(state); paint(); });
-
-    // hint animation on first view
-    const io = new IntersectionObserver((entries) => {
-      if (!entries[0].isIntersecting) return;
-      io.disconnect();
-      gsap.timeline({ delay: 0.4, onUpdate: paint })
-        .to(state, { p: 72, duration: 0.7, ease: 'power2.inOut' })
-        .to(state, { p: 30, duration: 0.9, ease: 'power2.inOut' })
-        .to(state, { p: 50, duration: 0.6, ease: 'power2.out' });
-    }, { threshold: 0.6 });
-    io.observe(fig);
-  });
+  function update() {
+    queued = false;
+    const vh = panel!.clientHeight;
+    for (const { fig, frame, before, after } of pairs) {
+      const r = fig.getBoundingClientRect();
+      const t = Math.min(1, Math.max(0, -r.top / Math.max(1, r.height - vh)));
+      // hold on the original at the start and on the edit at the end
+      const p = Math.min(1, Math.max(0, (t - 0.15) / 0.7));
+      frame.style.setProperty('--pos', `${(p * 100).toFixed(2)}%`);
+      after.style.opacity = p > 0.08 ? '1' : '0';
+      before.style.opacity = p < 0.92 ? '1' : '0';
+    }
+  }
+  const schedule = () => { if (!queued) { queued = true; requestAnimationFrame(update); } };
+  panel.addEventListener('scroll', schedule, { passive: true });
+  addEventListener('resize', schedule);
+  update();
 }

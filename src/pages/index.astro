@@ -4,7 +4,7 @@ import '../styles/global.css';
 import config from '../data/config.json';
 import photoInfo from '../data/photos.json';
 import tripData from '../data/trips.json';
-import { buildSignature } from '../lib/signature';
+import { loadSignature } from '../lib/signature';
 
 const byName = (a: string, b: string) => a.localeCompare(b, 'en', { numeric: true });
 const fileName = (p: string) => p.split('/').pop()!;
@@ -67,7 +67,7 @@ const pairs = await Promise.all(
     })
 );
 
-const signature = buildSignature(config.signature || config.name);
+const signature = loadSignature();
 ---
 
 <html lang="en" data-theme="dark" data-light="0">
@@ -80,6 +80,8 @@ const signature = buildSignature(config.signature || config.name);
     <meta property="og:description" content={config.bio} />
     {photos[0] && <meta property="og:image" content={photos[0].large} />}
     <meta name="theme-color" content="#0c0c0b" />
+    <meta name="format-detection" content="telephone=no, date=no, address=no, email=no" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <script is:inline>
       try { const n = Number(localStorage.getItem('light') || 0); if (n >= 0 && n <= 3) { const h = document.documentElement; h.dataset.light = String(n); h.dataset.theme = n >= 2 ? 'light' : 'dark'; } } catch (e) {}
     </script>
@@ -95,14 +97,14 @@ const signature = buildSignature(config.signature || config.name);
     <div class="grain" aria-hidden="true"></div>
 
     <div id="intro" aria-hidden="true">
-      <svg class:list={["signature", "signature-large", { "signature-strokes": signature.handDrawn }]} viewBox={signature.viewBox}>
+      <svg class="signature signature-large" viewBox={signature.viewBox}>
         {signature.strokes.map((s) => <path d={s.d} transform={s.transform} pathLength="1" />)}
       </svg>
     </div>
 
     <header class="corner top-left">
       <a href="/" class="brand" aria-label={config.name}>
-        <svg class:list={["signature", "signature-small", { "signature-strokes": signature.handDrawn }]} viewBox={signature.viewBox} aria-hidden="true">
+        <svg class="signature signature-small" viewBox={signature.viewBox} aria-hidden="true">
           {signature.strokes.map((s) => <path d={s.d} transform={s.transform} pathLength="1" />)}
         </svg>
       </a>
@@ -116,23 +118,25 @@ const signature = buildSignature(config.signature || config.name);
       <button class="nav-btn" data-go="info">Info</button>
     </nav>
 
-    <button id="lamp" aria-label="Light: off. Click for more light">
+    <div id="lamp">
       <span class="lamp-cord"></span>
-      <svg viewBox="0 0 12 12" aria-hidden="true">
-        <defs>
-          <radialGradient id="lampGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0" stop-color="#fff4d6" stop-opacity="0.95" />
-            <stop offset="0.4" stop-color="#ffc977" stop-opacity="0.42" />
-            <stop offset="1" stop-color="#ffb04a" stop-opacity="0" />
-          </radialGradient>
-        </defs>
-        <circle class="lamp-halo" cx="6" cy="6" r="20" fill="url(#lampGlow)" />
-        <g class="lamp-body">
-          <circle class="lamp-bulb" cx="6" cy="6" r="4" />
-        </g>
-      </svg>
+      <button class="lamp-switch" aria-label="Light: off. Click for more light">
+        <svg viewBox="0 0 12 12" aria-hidden="true">
+          <defs>
+            <radialGradient id="lampGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0" stop-color="#fff4d6" stop-opacity="0.95" />
+              <stop offset="0.4" stop-color="#ffc977" stop-opacity="0.42" />
+              <stop offset="1" stop-color="#ffb04a" stop-opacity="0" />
+            </radialGradient>
+          </defs>
+          <circle class="lamp-halo" cx="6" cy="6" r="20" fill="url(#lampGlow)" />
+          <g class="lamp-body">
+            <circle class="lamp-bulb" cx="6" cy="6" r="4" />
+          </g>
+        </svg>
+      </button>
       <span class="lamp-hint">On</span>
-    </button>
+    </div>
 
     <div class="corner bottom-left"><span id="counter">000</span><span class="muted">/{total}</span></div>
     <div class="corner bottom-center">
@@ -147,7 +151,7 @@ const signature = buildSignature(config.signature || config.name);
     <main id="scene" aria-label="Gallery" data-trips={JSON.stringify(trips.map(({ name, subtitle, text }) => ({ name, subtitle, text })))}>
       <div id="labels" aria-hidden="true"></div>
       {photos.map((p, i) => (
-        <button class="item" data-i={i} data-n={p.n} data-title={p.title} data-large={p.large} data-meta={p.meta} data-place={p.place} data-trip={tripOf(p.place)}
+        <button class="item" data-i={i} data-title={p.title} data-large={p.large} data-meta={p.meta} data-place={p.place} data-trip={tripOf(p.place)}
           style={`--ratio:${p.ratio}`} aria-label={`Open photograph ${p.n}`}>
           <img src={p.thumb} alt={p.title || `Photograph ${p.n}`} loading="eager" decoding="async" draggable="false" />
         </button>
@@ -181,18 +185,19 @@ const signature = buildSignature(config.signature || config.name);
 
     {pairs.length > 0 && (
       <section id="before-after" class="panel" aria-label="Before and after editing">
-        <p class="before-after-intro muted">Hover or drag the bar to reveal the edit.</p>
+        <p class="before-after-intro muted">Scroll to reveal the edit</p>
         {pairs.map((p) => (
-          <figure class="compare" style={`--ratio:${p.ratio}; --pos:50%`}>
-            <div class="compare-frame">
-              <img class="compare-before" src={p.before} alt={`${p.title} — before`} loading="lazy" decoding="async" draggable="false" />
-              <img class="compare-after" src={p.after} alt={`${p.title} — after`} loading="lazy" decoding="async" draggable="false" />
-              <span class="compare-tag left">Before</span>
-              <span class="compare-tag right">After</span>
-              <span class="compare-line" aria-hidden="true"><span class="compare-handle">↔</span></span>
-              <input class="compare-range" type="range" min="0" max="100" value="50" step="0.1" aria-label={`Compare ${p.title || p.n}: before and after`} />
+          <figure class="compare" style={`--ratio:${p.ratio}`}>
+            <div class="compare-stage">
+              <div class="compare-frame" style="--pos:0%">
+                <img class="compare-before" src={p.before} alt={`${p.title || p.n} — before`} loading="lazy" decoding="async" draggable="false" />
+                <img class="compare-after" src={p.after} alt={`${p.title || p.n} — after`} loading="lazy" decoding="async" draggable="false" />
+                <span class="compare-line" aria-hidden="true"></span>
+                <span class="compare-tag after">After</span>
+                <span class="compare-tag before">Before</span>
+              </div>
+              <figcaption><span class="muted">{p.n}</span> {p.title}</figcaption>
             </div>
-            <figcaption><span class="muted">{p.n}</span> {p.title}</figcaption>
           </figure>
         ))}
       </section>
@@ -200,15 +205,10 @@ const signature = buildSignature(config.signature || config.name);
 
     <section id="info" class="panel" aria-label="About">
       <div class="info-box">
-        <svg class:list={["signature", "signature-info", { "signature-strokes": signature.handDrawn }]} viewBox={signature.viewBox} aria-hidden="true">
-          {signature.strokes.map((s) => <path d={s.d} transform={s.transform} pathLength="1" />)}
-        </svg>
         <p class="info-headline">{config.headline}</p>
         <p class="info-bio">{config.bio}</p>
         <ul class="info-links">
           {config.email && <li><span class="muted">Say hello —</span> <a href={`mailto:${config.email}`}>{config.email}</a></li>}
-          {config.instagram && <li><a href={config.instagram} target="_blank" rel="noopener">Instagram ↗</a></li>}
-          {config.linkedin && <li><a href={config.linkedin} target="_blank" rel="noopener">LinkedIn ↗</a></li>}
         </ul>
       </div>
     </section>

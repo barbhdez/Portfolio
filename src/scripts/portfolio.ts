@@ -43,7 +43,8 @@ export function initPortfolio(colors: Color[] = []) {
 
   function computeSlots() {
     const vw = innerWidth, vh = innerHeight;
-    rMax = Math.min(vw, vh) * (vw < 700 ? 0.42 : 0.355);
+    // leave room for the bottom controls on short screens (phones in landscape)
+    rMax = Math.min(Math.min(vw, vh) * (vw < 700 ? 0.42 : 0.355), vh / 2 - 85);
     let rings: { r: number; cap: number }[] = [];
     // largest thumbnail size that fits every photo
     for (side = 110; side > 14; side -= 2) {
@@ -85,7 +86,7 @@ export function initPortfolio(colors: Color[] = []) {
     order.forEach((idx, k) => {
       const p = photos[idx], s = slots[k];
       if (!animate) { p.angle = s.angle; p.radius = s.radius; p.depth = s.depth; return; }
-      gsap.to(p, { angle: p.angle + turn(p.angle, s.angle), radius: s.radius, depth: s.depth, duration: 1.6, ease: 'expo.inOut', delay: (k / N) * 0.35 });
+      gsap.to(p, { angle: p.angle + turn(p.angle, s.angle), radius: s.radius, depth: s.depth, duration: 1.6, ease: 'expo.inOut', delay: (k / N) * 0.35, overwrite: 'auto' });
     });
   }
 
@@ -116,7 +117,7 @@ export function initPortfolio(colors: Color[] = []) {
   // trips mode: one sunflower-spiral cluster per trip, laid out around a circle
   function layoutTrips() {
     const mobile = innerWidth < 700;
-    const offX = mobile ? 0 : Math.min(innerWidth * 0.16, 290);
+    const offX = innerWidth < 900 ? 0 : Math.min(innerWidth * 0.16, 290);
     const zoom = mobile ? 0.62 : 0.8;
     const groups = trips.map(() => [] as number[]);
     photos.forEach((_, idx) => groups[tripOf(idx)].push(idx));
@@ -124,7 +125,7 @@ export function initPortfolio(colors: Color[] = []) {
     const used = groups.map((g, trip) => ({ g, trip })).filter((x) => x.g.length);
 
     const labelMargin = mobile ? 34 : 56;
-    const R0 = Math.min(innerHeight / 2 - labelMargin - side * 0.6, innerWidth / 2 - offX - labelMargin * 2.4);
+    const R0 = Math.min(innerHeight / 2 - labelMargin - side * 0.6 - (innerHeight < 500 ? 30 : 0), innerWidth / 2 - offX - labelMargin * 2.4);
     let c = side * 0.5 * zoom, R = R0 * 0.62;
     const islandR = (n: number) => c * Math.sqrt(n) + side * 0.45 * zoom;
     for (let it = 0; it < 5; it++) {
@@ -160,6 +161,15 @@ export function initPortfolio(colors: Color[] = []) {
       labelBox.appendChild(el);
       next.push({ el, x: cx + ux * (r + 10), y: cy + uy * (r + 10), trip });
     }
+    // nudge labels that would fall off screen or onto the bottom controls
+    const margin = 16, bottom = innerHeight - 64;
+    for (const l of next) {
+      const w = l.el.offsetWidth, h = l.el.offsetHeight;
+      const tx = parseFloat(l.el.style.getPropertyValue('--tx')) / 100, ty = parseFloat(l.el.style.getPropertyValue('--ty')) / 100;
+      const left = innerWidth / 2 + offX + l.x + tx * w, top = innerHeight / 2 + l.y + ty * h;
+      l.x += Math.max(margin - left, Math.min(0, innerWidth - margin - w - left));
+      l.y += Math.max(margin - top, Math.min(0, bottom - h - top));
+    }
     labels = next;
     return { targets, offX, zoom };
   }
@@ -182,7 +192,7 @@ export function initPortfolio(colors: Color[] = []) {
       const p = photos[idx];
       const angle = p.angle + turn(p.angle, Math.atan2(y, x) - spin);
       const radius = Math.hypot(x, y);
-      if (animate) gsap.to(p, { angle, radius, depth: 0.4, duration: 1.6, ease: 'expo.inOut', delay: (k / N) * 0.3 });
+      if (animate) gsap.to(p, { angle, radius, depth: 0.4, duration: 1.6, ease: 'expo.inOut', delay: (k / N) * 0.3, overwrite: 'auto' });
       else Object.assign(p, { angle, radius, depth: 0.4 });
     });
     gsap.fromTo(labelBox.children, { opacity: 0 }, { opacity: 1, duration: 0.8, delay: animate ? 1.1 : 0, stagger: 0.05 });
@@ -325,7 +335,7 @@ export function initPortfolio(colors: Color[] = []) {
       photos.forEach((o, k) => o.el.classList.toggle('same-trip', tripOf(k) === trip));
       showTrip(trip);
     }
-    gsap.to(p, { focus: 1, duration: FOCUS_TIME, ease: 'power3.inOut', overwrite: true });
+    gsap.to(p, { focus: 1, duration: FOCUS_TIME, ease: 'power3.inOut', overwrite: 'auto' });
     hoverTitle.textContent = p.el.dataset.title || p.el.dataset.place || '';
     setCounter(i + 1);
     tap();
@@ -339,14 +349,14 @@ export function initPortfolio(colors: Color[] = []) {
     scene.classList.remove('hovering');
     photos.forEach((o) => o.el.classList.remove('same-trip'));
     hoverTitle.textContent = '';
-    gsap.to(p, { focus: 0, duration: 0.6, ease: 'power3.out', overwrite: true });
+    gsap.to(p, { focus: 0, duration: 0.6, ease: 'power3.out', overwrite: 'auto' });
   }
 
   function pin(p: Photo) {
     pinned = p;
     p.el.classList.add('pinned', 'hover');
     scene.classList.add('hovering', 'has-pinned');
-    gsap.to(p, { focus: 1, duration: Math.max(0.35, (1 - p.focus) * FOCUS_TIME), ease: 'power3.out', overwrite: true });
+    gsap.to(p, { focus: 1, duration: Math.max(0.35, (1 - p.focus) * FOCUS_TIME), ease: 'power3.out', overwrite: 'auto' });
   }
 
   function unpin() {
@@ -531,10 +541,9 @@ export function initPortfolio(colors: Color[] = []) {
       if (panel.id === target) {
         panel.scrollTop = 0;
         gsap.fromTo(panel, { autoAlpha: 0, y: 20 }, { autoAlpha: 1, y: 0, duration: 0.6, ease: 'expo.out' });
-        const children = panel.querySelectorAll('li, .compare, .info-box > *');
+        const children = panel.querySelectorAll('li, .info-box > *');
         gsap.fromTo(children, { opacity: 0, y: 16 },
           { opacity: 1, y: 0, duration: 0.7, ease: 'expo.out', stagger: { each: 0.015, from: 'start' } });
-        if (target === 'info') panel.dispatchEvent(new CustomEvent('show'));
       } else {
         gsap.to(panel, { autoAlpha: 0, duration: 0.35 });
       }
