@@ -1,0 +1,177 @@
+{
+  "trips": [
+    {
+      "name": {
+        "en": "Spain",
+        "es": "España",
+        "fr": "Espagne"
+      },
+      "subtitle": {
+        "en": "Madrid · Asturias · Segovia · Barcelona",
+        "es": "Madrid · Asturias · Segovia · Barcelona",
+        "fr": "Madrid · Asturies · Ségovie · Barcelone"
+      },
+      "text": {
+        "en": "Home. From the high plains to the Cantabrian Sea: the familiar, seen as if for the first time.",
+        "es": "Casa. De la meseta al mar Cantábrico: lo de siempre, visto como si fuera la primera vez.",
+        "fr": "Chez moi. Des hauts plateaux à la mer Cantabrique : le familier, vu comme pour la première fois."
+      },
+      "places": [
+        "Spain",
+        "Madrid",
+        "Asturias",
+        "Segovia",
+        "Barcelona"
+      ]
+    },
+    {
+      "name": {
+        "en": "Italian Lakes",
+        "es": "Lagos italianos",
+        "fr": "Lacs italiens"
+      },
+      "subtitle": {
+        "en": "Italy",
+        "es": "Italia",
+        "fr": "Italie"
+      },
+      "text": {
+        "en": "Sunsets over the water and villages clinging to the mountainside.",
+        "es": "Atardeceres sobre el agua y pueblos aferrados a la montaña.",
+        "fr": "Couchers de soleil sur l’eau et villages accrochés à la montagne."
+      },
+      "places": [
+        "Italy"
+      ]
+    },
+    {
+      "name": {
+        "en": "Europe",
+        "es": "Europa",
+        "fr": "Europe"
+      },
+      "subtitle": {
+        "en": "Amsterdam · Berlin · Budapest",
+        "es": "Ámsterdam · Berlín · Budapest",
+        "fr": "Amsterdam · Berlin · Budapest"
+      },
+      "text": {
+        "en": "City escapes: canals, domes and façades mirrored in the water.",
+        "es": "Escapadas urbanas: canales, cúpulas y fachadas reflejadas en el agua.",
+        "fr": "Escapades urbaines : canaux, coupoles et façades qui se reflètent dans l’eau."
+      },
+      "places": [
+        "Amsterdam",
+        "Berlin",
+        "Budapest"
+      ]
+    },
+    {
+      "name": {
+        "en": "East Coast",
+        "es": "Costa Este",
+        "fr": "Côte Est"
+      },
+      "subtitle": {
+        "en": "New York · Washington D.C.",
+        "es": "Nueva York · Washington D.C.",
+        "fr": "New York · Washington D.C."
+      },
+      "text": {
+        "en": "Skyscrapers, bridges and lights that never go out.",
+        "es": "Rascacielos, puentes y luces que nunca se apagan.",
+        "fr": "Gratte-ciel, ponts et lumières qui ne s’éteignent jamais."
+      },
+      "places": [
+        "New York",
+        "Washington D.C."
+      ]
+    },
+    {
+      "name": {
+        "en": "California",
+        "es": "California",
+        "fr": "Californie"
+      },
+      "subtitle": {
+        "en": "San Francisco · Sausalito · Yosemite · San Diego",
+        "es": "San Francisco · Sausalito · Yosemite · San Diego",
+        "fr": "San Francisco · Sausalito · Yosemite · San Diego"
+      },
+      "text": {
+        "en": "From the fog of the Bay to the beaches of the south, by way of Yosemite’s granite.",
+        "es": "De la niebla de la bahía a las playas del sur, pasando por el granito de Yosemite.",
+        "fr": "Du brouillard de la baie aux plages du sud, en passant par le granit de Yosemite."
+      },
+      "places": [
+        "San Francisco",
+        "Sausalito",
+        "California",
+        "Yosemite",
+        "San Diego"
+      ]
+    },
+    {
+      "name": {
+        "en": "The Southwest",
+        "es": "El Suroeste",
+        "fr": "Le Sud-Ouest"
+      },
+      "subtitle": {
+        "en": "Grand Canyon · Antelope Canyon",
+        "es": "Gran Cañón · Antelope Canyon",
+        "fr": "Grand Canyon · Antelope Canyon"
+      },
+      "text": {
+        "en": "Red rock, light that cuts like a blade, and a scale no photograph can hold.",
+        "es": "Roca roja, una luz que corta como una cuchilla y una escala que ninguna foto puede abarcar.",
+        "fr": "Roche rouge, une lumière tranchante comme une lame et une échelle qu’aucune photo ne peut contenir."
+      },
+      "places": [
+        "Grand Canyon",
+        "Antelope Canyon"
+      ]
+    },
+    {
+      "name": {
+        "en": "Islands",
+        "es": "Islas",
+        "fr": "Îles"
+      },
+      "subtitle": {
+        "en": "Hawaii · Puerto Rico",
+        "es": "Hawái · Puerto Rico",
+        "fr": "Hawaï · Porto Rico"
+      },
+      "text": {
+        "en": "Waterfalls in the jungle, fire in the Pacific night and palm trees leaning over the Caribbean.",
+        "es": "Cascadas en la selva, fuego en la noche del Pacífico y palmeras inclinadas sobre el Caribe.",
+        "fr": "Des cascades dans la jungle, du feu dans la nuit du Pacifique et des palmiers penchés sur les Caraïbes."
+      },
+      "places": [
+        "Hawaii",
+        "Puerto Rico"
+      ]
+    },
+    {
+      "name": {
+        "en": "Unsorted",
+        "es": "Sin clasificar",
+        "fr": "Non classées"
+      },
+      "subtitle": {
+        "en": "Not yet placed",
+        "es": "Aún sin ubicar",
+        "fr": "Pas encore classées"
+      },
+      "text": {
+        "en": "Loose photographs still waiting for a trip.",
+        "es": "Fotos sueltas que aún esperan su viaje.",
+        "fr": "Des photos isolées qui attendent encore leur voyage."
+      },
+      "places": [
+        "Other"
+      ]
+    }
+  ]
+}

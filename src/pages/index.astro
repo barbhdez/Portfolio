@@ -1,0 +1,253 @@
+---
+import { getImage } from 'astro:assets';
+import '../styles/global.css';
+import config from '../data/config.json';
+import photoInfo from '../data/photos.json';
+import tripData from '../data/trips.json';
+import strings from '../data/translations.json';
+import { loadSignature } from '../lib/signature';
+
+const en = strings.en;
+const byName = (a: string, b: string) => a.localeCompare(b, 'en', { numeric: true });
+const fileName = (p: string) => p.split('/').pop()!;
+
+// "new-york_night.jpg" -> "New york night"; camera names (IMG_1234) get no title
+const titleFromFile = (name: string) => {
+  const base = name.replace(/\.[^.]+$/, '');
+  if (/^(IMG|DSC|DSCF|PXL|P\d)[-_ ]?\d/i.test(base)) return '';
+  return base.replace(/[-_]+/g, ' ').replace(/^\w/, (c) => c.toUpperCase());
+};
+
+const files = import.meta.glob<{ default: ImageMetadata }>('../assets/gallery/*.{jpg,jpeg,png,webp,avif,JPG,JPEG,PNG,WEBP}', { eager: true });
+const photos = await Promise.all(
+  Object.keys(files).sort(byName).map(async (p, i) => {
+    const src = files[p].default;
+    const name = fileName(p);
+    const info = (photoInfo as Record<string, { place?: string; title?: string }>)[name] ?? {};
+    const thumb = await getImage({ src, width: Math.min(420, src.width), format: 'webp', quality: 72 });
+    const large = await getImage({ src, width: Math.min(2000, src.width), format: 'webp', quality: 82 });
+    return {
+      n: String(i + 1).padStart(3, '0'),
+      title: info.title || titleFromFile(name),
+      place: info.place || 'Other',
+      thumb: thumb.src,
+      large: large.src,
+      ratio: src.width / src.height,
+    };
+  })
+);
+const total = String(photos.length).padStart(3, '0');
+const trips = tripData.trips;
+const tripOf = (place: string) => {
+  const k = trips.findIndex((t) => t.places.includes(place));
+  return k < 0 ? trips.length - 1 : k;
+};
+
+// before/after pairs: name-before.jpg + name-after.jpg
+const pairFiles = import.meta.glob<{ default: ImageMetadata }>('../assets/before-after/*.{jpg,jpeg,png,webp,avif,JPG,JPEG,PNG,WEBP}', { eager: true });
+const groups: Record<string, { before?: ImageMetadata; after?: ImageMetadata }> = {};
+for (const p of Object.keys(pairFiles)) {
+  const m = fileName(p).match(/^(.*?)[-_ ](before|after)\.[^.]+$/i);
+  if (!m) continue;
+  groups[m[1]] ??= {};
+  groups[m[1]][m[2].toLowerCase() as 'before' | 'after'] = pairFiles[p].default;
+}
+const pairs = await Promise.all(
+  Object.keys(groups).sort(byName)
+    .filter((k) => groups[k].before && groups[k].after)
+    .map(async (k, i) => {
+      const { before, after } = groups[k] as { before: ImageMetadata; after: ImageMetadata };
+      const w = Math.min(1800, after.width);
+      return {
+        n: String(i + 1).padStart(2, '0'),
+        title: titleFromFile(k + '.jpg'),
+        before: (await getImage({ src: before, width: w, format: 'webp', quality: 82 })).src,
+        after: (await getImage({ src: after, width: w, format: 'webp', quality: 82 })).src,
+        ratio: after.width / after.height,
+      };
+    })
+);
+
+const signature = loadSignature();
+---
+
+<html lang="en" data-theme="dark" data-light="0">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{config.name} — Portfolio</title>
+    <meta name="description" content={`${config.name} · ${en.role}. ${config.headline}`} />
+    <meta property="og:title" content={`${config.name} — Portfolio`} />
+    <meta property="og:description" content={en.bio} />
+    {photos[0] && <meta property="og:image" content={photos[0].large} />}
+    <meta name="theme-color" content="#0c0c0b" />
+    <meta name="format-detection" content="telephone=no, date=no, address=no, email=no" />
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="icon" href="/favicon-192.png" type="image/png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <script is:inline>
+      try { const n = Number(localStorage.getItem('light') || 0); if (n >= 0 && n <= 3) { const h = document.documentElement; h.dataset.light = String(n); h.dataset.theme = n >= 2 ? 'light' : 'dark'; } } catch (e) {}
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body data-view="ring">
+    <div class="grain" aria-hidden="true"></div>
+
+    <div id="intro" aria-hidden="true">
+      <svg class="signature signature-large" viewBox={signature.viewBox}>
+        {signature.strokes.map((s) => <path d={s.d} transform={s.transform} pathLength="1" />)}
+      </svg>
+    </div>
+
+    <header class="corner top-left">
+      <a href="/" class="brand" aria-label={config.name}>
+        <svg class="signature signature-small" viewBox={signature.viewBox} aria-hidden="true">
+          {signature.strokes.map((s) => <path d={s.d} transform={s.transform} pathLength="1" />)}
+        </svg>
+      </a>
+      <span class="muted" data-i18n="role">{en.role}</span>
+    </header>
+
+    <nav class="corner top-right">
+      <button class="nav-btn active" data-go="ring" data-i18n="nav.ring">{en["nav.ring"]}</button>
+      <button class="nav-btn" data-go="index" data-i18n="nav.index">{en["nav.index"]}</button>
+      {pairs.length > 0 && <button class="nav-btn" data-go="before-after" data-i18n="nav.beforeAfter">{en["nav.beforeAfter"]}</button>}
+      <button class="nav-btn" data-go="info" data-i18n="nav.info">{en["nav.info"]}</button>
+    </nav>
+
+    <div id="lamp">
+      <span class="lamp-cord"></span>
+      <button class="lamp-switch" aria-label={en["lamp.aria"]}>
+        <svg viewBox="0 0 12 12" aria-hidden="true">
+          <defs>
+            <radialGradient id="lampGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0" stop-color="#fff4d6" stop-opacity="0.95" />
+              <stop offset="0.4" stop-color="#ffc977" stop-opacity="0.42" />
+              <stop offset="1" stop-color="#ffb04a" stop-opacity="0" />
+            </radialGradient>
+          </defs>
+          <circle class="lamp-halo" cx="6" cy="6" r="20" fill="url(#lampGlow)" />
+          <g class="lamp-body">
+            <circle class="lamp-bulb" cx="6" cy="6" r="4" />
+          </g>
+        </svg>
+      </button>
+      <span class="lamp-hint">{en["lamp.on"]}</span>
+    </div>
+
+    <div class="corner bottom-right lang" role="group" aria-label={en.language} data-i18n-label="language">
+      <button class="lang-btn active" data-lang="en" aria-pressed="true">EN</button>
+      <button class="lang-btn" data-lang="es" aria-pressed="false">ES</button>
+      <button class="lang-btn" data-lang="fr" aria-pressed="false">FR</button>
+    </div>
+
+    <div class="corner bottom-left"><span id="counter">000</span><span class="muted">/{total}</span></div>
+    <div class="corner bottom-center">
+      <div id="hover-title" aria-live="polite"></div>
+      <div class="sort" role="tablist" aria-label="Sort the ring" data-mode="color">
+        <button class="sort-btn active" role="tab" aria-selected="true" data-sort="color" data-i18n="sort.color">{en["sort.color"]}</button>
+        <span class="sort-track" aria-hidden="true"><span class="sort-knob"></span></span>
+        <button class="sort-btn" role="tab" aria-selected="false" data-sort="trip" data-i18n="sort.trip">{en["sort.trip"]}</button>
+      </div>
+    </div>
+
+    <main id="scene" aria-label="Gallery" data-trips={JSON.stringify(trips.map(({ name, subtitle, text }) => ({ name, subtitle, text })))}>
+      <div id="labels" aria-hidden="true"></div>
+      {photos.map((p, i) => (
+        <button class="item" data-i={i} data-title={p.title} data-large={p.large} data-place={p.place} data-trip={tripOf(p.place)}
+          style={`--ratio:${p.ratio}`} aria-label={`${p.n} ${p.title || p.place}`}>
+          <img src={p.thumb} alt={p.title || `Photograph ${p.n}`} loading="eager" decoding="async" draggable="false" />
+        </button>
+      ))}
+    </main>
+
+    <aside id="trip-text" aria-live="polite">
+      <p class="tt-name"></p>
+      <p class="tt-body">{en.tripsIntro}</p>
+    </aside>
+
+    <section id="index" class="panel" aria-label="Index of work">
+      <div class="sort sort-index" role="tablist" aria-label="Sort the index" data-mode="color">
+        <button class="sort-btn active" role="tab" aria-selected="true" data-sort="color" data-i18n="sort.color">{en["sort.color"]}</button>
+        <span class="sort-track" aria-hidden="true"><span class="sort-knob"></span></span>
+        <button class="sort-btn" role="tab" aria-selected="false" data-sort="trip" data-i18n="sort.trip">{en["sort.trip"]}</button>
+      </div>
+      <ol class="grid">
+        {photos.map((p, i) => (
+          <li class={p.ratio > 1 ? 'wide' : ''}>
+            <button class="cell" data-i={i}>
+              <span class={`cell-img${p.ratio > 1 ? ' landscape' : ''}`} style={`--ratio:${p.ratio}`}>
+                <img src={p.thumb} alt={p.title || `Photograph ${p.n}`} loading="lazy" decoding="async" />
+              </span>
+              <span class="cell-caption"><span class="muted">{p.n}</span> {p.title}</span>
+            </button>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    {pairs.length > 0 && (
+      <section id="before-after" class="panel" aria-label="Before and after editing">
+        <p class="before-after-intro muted" data-i18n="ba.intro">{en["ba.intro"]}</p>
+        {pairs.map((p) => (
+          <figure class="compare" style={`--ratio:${p.ratio}`}>
+            <div class="compare-stage">
+              <div class="compare-frame" style="--pos:0%">
+                <img class="compare-before" src={p.before} alt={`${p.title || p.n} — before`} loading="lazy" decoding="async" draggable="false" />
+                <img class="compare-after" src={p.after} alt={`${p.title || p.n} — after`} loading="lazy" decoding="async" draggable="false" />
+                <span class="compare-line" aria-hidden="true"></span>
+                <span class="compare-tag after" data-i18n="ba.after">{en["ba.after"]}</span>
+                <span class="compare-tag before" data-i18n="ba.before">{en["ba.before"]}</span>
+              </div>
+              <figcaption><span class="muted">{p.n}</span> {p.title}</figcaption>
+            </div>
+          </figure>
+        ))}
+      </section>
+    )}
+
+    <section id="info" class="panel" aria-label="About">
+      <div class="info-box">
+        <p class="info-headline">{config.headline}</p>
+        <p class="info-bio" data-i18n="bio">{en.bio}</p>
+        <ul class="info-links">
+          {config.email && <li><span class="muted" data-i18n="sayHello">{en.sayHello}</span> <a href={`mailto:${config.email}`}>{config.email}</a></li>}
+        </ul>
+      </div>
+    </section>
+
+    <div id="viewer" aria-hidden="true">
+      <img id="viewer-img" alt="" />
+      <div class="viewer-caption">
+        <span id="viewer-n"></span>
+        <span id="viewer-title"></span>
+        <span id="viewer-meta" class="muted"></span>
+      </div>
+      <button class="viewer-btn prev" aria-label={en.prev} data-i18n-label="prev">←</button>
+      <button class="viewer-btn next" aria-label={en.next} data-i18n-label="next">→</button>
+      <button class="viewer-btn close" aria-label={en.close} data-i18n-label="close"><span data-i18n="close">{en.close}</span> ✕</button>
+    </div>
+
+    <script>
+      import { initLang } from '../scripts/i18n.ts';
+      import { initPortfolio } from '../scripts/portfolio.ts';
+      import { initLight } from '../scripts/light.ts';
+      import { initCompare } from '../scripts/compare.ts';
+      import { playIntro } from '../scripts/signature.ts';
+      import { initSound } from '../scripts/sound.ts';
+      import { analyseColors } from '../scripts/colors.ts';
+      initLang();
+      initLight();
+      initSound();
+      initCompare();
+      const colors = analyseColors(Array.from(document.querySelectorAll<HTMLImageElement>('#scene .item img')));
+      playIntro().then(() => colors).then(initPortfolio);
+    </script>
+  </body>
+</html>
